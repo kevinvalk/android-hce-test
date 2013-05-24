@@ -52,9 +52,21 @@ public class MainActivity extends FragmentActivity implements
 	 * current dropdown position.
 	 */
 	private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+	
+	public MainActivity()
+	{
+		// Setup my applets
+		passport = new Passport("IH5PRB342", "910123", "170619");
+		passportApplet = new PassportApplet(passport);
+		
+		// Enable NFC HCE and register our applets
+		framework = new HceFramework();
+		framework.register(passportApplet);
+	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
@@ -72,14 +84,6 @@ public class MainActivity extends FragmentActivity implements
 								getString(R.string.title_section1),
 								getString(R.string.title_section2),
 								getString(R.string.title_section3), }), this);
-		
-		// Setup my applets
-		passport = new Passport("IH5PRB342", "910123", "170619");
-		passportApplet = new PassportApplet(passport);
-		
-		// Enable NFC HCE and register our applets
-		framework = new HceFramework();
-		framework.register(passportApplet);
 		
         // Fix adapter settings
         adapter = NfcAdapter.getDefaultAdapter(this);

@@ -1,11 +1,13 @@
 package org.kevinvalk.hce;
 
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.kevinvalk.hce.applet.passport.Passport;
+import org.kevinvalk.hce.applet.passport.PassportApplet;
 import  org.kevinvalk.hce.framework.TagWrapper;
 import  org.kevinvalk.hce.framework.HceFramework;
-
 
 import android.app.ActionBar;
 import android.app.PendingIntent;
@@ -34,6 +36,8 @@ public class MainActivity extends FragmentActivity implements
 		ActionBar.OnNavigationListener {
 
 	// NFC HCE
+	private PassportApplet passportApplet;
+	private Passport passport;
 	private NfcAdapter adapter;
     private PendingIntent pendingIntent;
     private IntentFilter[] filters;
@@ -69,8 +73,13 @@ public class MainActivity extends FragmentActivity implements
 								getString(R.string.title_section2),
 								getString(R.string.title_section3), }), this);
 		
-		// Enable NFC HCE
+		// Setup my applets
+		passport = new Passport("IH5PRB342", "910123", "170619");
+		passportApplet = new PassportApplet(passport);
+		
+		// Enable NFC HCE and register our applets
 		framework = new HceFramework();
+		framework.register(passportApplet);
 		
         // Fix adapter settings
         adapter = NfcAdapter.getDefaultAdapter(this);

@@ -6,17 +6,20 @@ import java.util.List;
 
 import org.kevinvalk.hce.applet.passport.Passport;
 import org.kevinvalk.hce.applet.passport.PassportApplet;
+import org.kevinvalk.hce.framework.Applet;
 import  org.kevinvalk.hce.framework.TagWrapper;
 import  org.kevinvalk.hce.framework.HceFramework;
 
 import android.app.ActionBar;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
 import android.support.v4.app.Fragment;
@@ -29,6 +32,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -36,14 +40,17 @@ public class MainActivity extends FragmentActivity implements
 		ActionBar.OnNavigationListener {
 
 	// NFC HCE
-	private PassportApplet passportApplet;
-	private Passport passport;
+	private PassportApplet passportApplet = null;
+	private Passport passport = null;
+	private HceFramework framework = null;
+	
+	// Settings
 	private NfcAdapter adapter;
     private PendingIntent pendingIntent;
     private IntentFilter[] filters;
     private String[][] techLists;
     private WakeLock wakeLock;
-    private HceFramework framework;
+    private PowerManager powerManager;
 	private static final String TECH_ISO_PCDA = "android.nfc.tech.IsoPcdA";
 	
 	private static final String TAG = "HCE";
@@ -53,23 +60,30 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 	
-	public MainActivity()
+	private void initFramework()
 	{
 		// Setup my applets
-		passport = new Passport("IH5PRB342", "910123", "170619");
-		passportApplet = new PassportApplet(passport);
+		if (passport == null)
+			passport = new Passport("L898902C<", "690806", "940623");
+		if (passportApplet == null)
+			passportApplet = new PassportApplet(passport);
 		
 		// Enable NFC HCE and register our applets
-		framework = new HceFramework();
+		if (framework == null)
+			framework = new HceFramework();
 		framework.register(passportApplet);
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+        // Get power management
+        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        
 		// Set up the action bar to show a dropdown list.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setDisplayShowTitleEnabled(false);
@@ -90,6 +104,9 @@ public class MainActivity extends FragmentActivity implements
         adapter.setNdefPushMessage(null, this);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN)
             adapter.setBeamPushUris(null, this);
+        
+        // Setup our framework
+        initFramework();
         
         // Register new tech
         pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
@@ -144,6 +161,30 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    @Override
+	public void onResume()
+	{
+    	super.onResume();
+    	
+    	//if (wakeLock != null)
+    		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, getString(R.string.app_name));
+        wakeLock.acquire();
+        
+		if (adapter != null)
+			adapter.enableForegroundDispatch(this, pendingIntent, filters,techLists);
+	}
+    
+    @Override
+    public void onPause()
+	{
+		super.onPause();
+		if (adapter != null)
+			adapter.disableForegroundDispatch(this);
+		
+        if (wakeLock != null)
+            wakeLock.release();
+	}
+    
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		// Restore the previously serialized current dropdown position.

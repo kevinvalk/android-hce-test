@@ -7,8 +7,8 @@ import java.util.List;
 import org.kevinvalk.hce.applet.passport.Passport;
 import org.kevinvalk.hce.applet.passport.PassportApplet;
 import org.kevinvalk.hce.framework.Applet;
-import  org.kevinvalk.hce.framework.TagWrapper;
-import  org.kevinvalk.hce.framework.HceFramework;
+import org.kevinvalk.hce.framework.TagWrapper;
+import org.kevinvalk.hce.framework.HceFramework;
 
 import android.app.ActionBar;
 import android.app.PendingIntent;

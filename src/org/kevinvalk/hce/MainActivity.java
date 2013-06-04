@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.kevinvalk.hce.applet.passport.Passport;
 import org.kevinvalk.hce.applet.passport.PassportApplet;
-import org.kevinvalk.hce.framework.Applet;
 import org.kevinvalk.hce.framework.TagWrapper;
 import org.kevinvalk.hce.framework.HceFramework;
 
@@ -24,12 +23,9 @@ import android.os.PowerManager.WakeLock;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.NavUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -161,7 +157,8 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
 	public void onResume()
 	{
     	super.onResume();

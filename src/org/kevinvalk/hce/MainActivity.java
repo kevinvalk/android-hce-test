@@ -1,6 +1,8 @@
 package org.kevinvalk.hce;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,11 +11,15 @@ import org.kevinvalk.hce.applet.passport.PassportApplet;
 import org.kevinvalk.hce.framework.TagWrapper;
 import org.kevinvalk.hce.framework.HceFramework;
 
+import sos.passportapplet.FileSystem;
+
 import android.app.ActionBar;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
@@ -37,6 +43,7 @@ public class MainActivity extends FragmentActivity implements
 
 	// NFC HCE
 	private PassportApplet passportApplet = null;
+	private sos.passportapplet.PassportApplet jmrtApplet = null;
 	private Passport passport = null;
 	private HceFramework framework = null;
 	
@@ -56,18 +63,64 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 	
+	private byte[] readAsset(String name)
+	{
+		AssetManager a = getResources().getAssets();
+		
+		byte[] data = new byte[0];
+		
+		try
+		{
+			AssetFileDescriptor fd = a.openFd(name);
+			InputStream i = fd.createInputStream();
+			
+			int size = (int) fd.getLength();
+			if (size > Short.MAX_VALUE)
+				throw new RuntimeException("To big file");
+			data = new byte[size];
+			i.read(data);
+			
+			i.close();
+			fd.close();
+		}
+		catch(IOException e)
+		{
+			throw new RuntimeException(e.getMessage());
+		}
+		
+		return data;
+	}
 	private void initFramework()
 	{
 		// Setup my applets
-		if (passport == null)
+		/*if (passport == null)
 			passport = new Passport("L898902C<", "690806", "940623");
 		if (passportApplet == null)
-			passportApplet = new PassportApplet(passport);
+			passportApplet = new PassportApplet(passport);*/
+		
+		if (jmrtApplet == null)
+		{
+			jmrtApplet = new sos.passportapplet.PassportApplet(sos.passportapplet.PassportCrypto.JCOP41_MODE);
+			
+			jmrtApplet.setBac("IH5PRB342", "910123", "170619");
+			jmrtApplet.setFile((short) 0x0101, readAsset("0101.mp3"));
+			jmrtApplet.setFile((short) 0x0102, readAsset("0102.mp3"));
+			jmrtApplet.setFile((short) 0x010E, readAsset("010E.mp3"));
+			jmrtApplet.setFile((short) 0x010F, readAsset("010F.mp3"));
+			jmrtApplet.setFile((short) 0x011C, readAsset("011C.mp3"));
+			jmrtApplet.setFile((short) 0x011D, readAsset("011D.mp3"));
+			jmrtApplet.setFile((short) 0x011E, readAsset("011E.mp3"));
+			
+			/*jmrtApplet.setFile((short) 0x0101, readAsset("0101_fake.mp3"));
+			jmrtApplet.setFile((short) 0x0102, readAsset("0102_fake.mp3"));
+			jmrtApplet.setFile((short) 0x011D, readAsset("011D_fake.mp3"));
+			jmrtApplet.setFile((short) 0x011E, readAsset("011E_fake.mp3"));*/
+		}
 		
 		// Enable NFC HCE and register our applets
 		if (framework == null)
 			framework = new HceFramework();
-		framework.register(passportApplet);
+		framework.register(jmrtApplet);
 	}
 
 	@Override
